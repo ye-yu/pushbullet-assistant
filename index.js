@@ -1,64 +1,42 @@
-'use strict';
-const https = require('https');
-const fs    = require('fs');
-const nrc = require('node-run-cmd');
+const fs = require('fs')
 
-function dataCallback(data) 
+var KEY;
+function startWebSocket()
 {
-    console.log(data);
+    let WebSocket = require('ws');
+        
+    let websocket = new WebSocket('wss://stream.pushbullet.com/websocket/' + KEY);
+    websocket.onopen = function(e) {
+        console.log("Opening")
+    }
+    websocket.onmessage = function(e) {
+        data = JSON.parse(e.data);
+        if(data.type === 'nop')
+        {
+            console.log("Connection is still alive.");
+        }
+        else if(data.type === 'tickle')
+        {
+            console.log("Push is performed.");
+            if(data.subtype === 'push')
+            {
+                require('./perform-request.js');
+                functions.sendRequest(KEY);
+            }
+        }
+    }
+    websocket.onerror = function(e) {
+        console.log("WebSocket onerror");
+    }
+    websocket.onclose = function(e) {
+        console.log("WebSocket onclose");
+    }
 }
 
-var startPlayer = [
-        {
-            'command' : 'pm2 start ecosystem.config.js',
-        }
-    ];
-nrc.run(startPlayer,
-    {
-        'onData' : dataCallback,
-        'onDone' : dataCallback
-    }
-);
-setTimeout(function(){
-    var stopPlayer = [
-            {
-                'command' : 'pm2 stop ecosystem.config.js',
-            }
-        ];
-    nrc.run(stopPlayer,
-        {
-            'onData' : dataCallback
-        }
-    );
-}, 1000*50);
-/*
-var KEY = '';
 fs.readFile('API', 'utf8', function(err, content) 
     {
         KEY = content;
-        let options = {
-            'host'   : 'api.pushbullet.com',
-            'path'   : '/v2/pushes',
-            'method' : 'GET',
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Token': KEY
-            }
-        };
-        let req = https.request(options, function (res) {
-            var responseString = '';
-
-            res.on('data', function (data) {
-                responseString += data;
-            });
-
-            res.on('end', function () {
-                console.log(responseString); 
-                // print to console when response ends
-            });
-        });
-        req.write('');
-        req.end();
+        startWebSocket();
+        console.log("API KEY", KEY)
     }
 );
-*/
