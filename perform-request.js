@@ -3,17 +3,60 @@ const child_process = require('child_process')
 const https         = require('https')
 function startMusic(title)
 {
-    stopMusic();
-    child_process.exec(`pm2 start ecosystem.config.js --name youtube-test -- "`
-                      + title 
-                      + `"`);
+    let p = stopMedia();
+    p.stdout.pipe(process.stdout);
+    p.on('error',function()
+        {
+            child_process.exec(`pm2 start ecosystem.config.js --only youtube-test -- "`
+                              + title 
+                              + ` music"`);
+        }
+    );
+    p.on('exit',function()
+        {
+            child_process.exec(`pm2 start ecosystem.config.js --only youtube-test -- "`
+                              + title 
+                              + ` music"`);
+        }
+    );
 }
 
-function stopMusic()
+function stopMedia()
 {
-    child_process.exec(`pm2 stop all"`);
+    return child_process.exec(`pm2 stop all"`);
 }
 
+function learnKorean()
+{
+    let p = stopMedia();
+    p.stdout.pipe(process.stdout);
+    p.on('error',function()
+        {
+            child_process.exec(`pm2 start ecosystem.config.js --only youtube-learn-korean`);
+        }
+    );
+    p.on('exit',function()
+        {
+            child_process.exec(`pm2 start ecosystem.config.js --only youtube-learn-korean`);
+        }
+    );
+}
+
+function learnCantonese()
+{
+    let p = stopMedia();
+    p.stdout.pipe(process.stdout);
+    p.on('error',function()
+        {
+            child_process.exec(`pm2 start ecosystem.config.js --only youtube-learn-cantonese`);
+        }
+    );
+    p.on('exit',function()
+        {
+            child_process.exec(`pm2 start ecosystem.config.js --only youtube-learn-cantonese`);
+        }
+    );
+}
 function sendRequest(key)
 {
     let responseString = '';
@@ -48,11 +91,12 @@ function processRequest(data)
     let title = data.pushes[0]['title']
     if(title !== 'Push2Run NEWLO')
         return;
-    let body  = data.pushes[0]['body'];
+    let body            = data.pushes[0]['body'];
     
-    let play_youtube = 'play youtube ';
-    let stop_youtube = 'youtube stop all youtube audio';
-    
+    let play_youtube    = 'play youtube ';
+    let stop_youtube    = 'youtube stop all youtube audio';
+    let learn_cantonese = 'learn cantonese';
+    let learn_korean    = 'learn korean';
     console.log("Command", body);
     if(body.startsWith(play_youtube))
     {
@@ -60,7 +104,15 @@ function processRequest(data)
     }
     else if(body === stop_youtube)
     {
-        stopMusic();
+        stopMedia();
+    }
+    else if(body === learn_cantonese)
+    {
+        learnCantonese();
+    }
+    else if(body === learn_korean)
+    {
+        learnKorean();
     }
 }
 

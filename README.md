@@ -8,3 +8,5 @@ but it won't work maybe because of my pc is a bicth and wont cooperate and it ju
 
 
 update: new plan, i am going to start all over again because i am a dubm i cannot wrap my head around the node.js and am going to use python + node.js with this smh
+
+update: nah i still work with node.js
